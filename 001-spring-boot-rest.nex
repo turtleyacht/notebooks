@@ -1,0 +1,108 @@
+" tutorial: https://spring.io/guides/gs/rest-service
+" $ man /usr/local/Cellar/nvi/1.81.6_6/share/man/man1/nex.1
+" $ nvi 001-clone.nex
+" :set ai
+" :wq
+" $ nex < 001-clone.nex
+! rm -rf gs-rest-service
+"! git clone https://github.com/spring-guides/gs-rest-service.git
+"! git clone https://github.com/turtleyacht/gs-rest-service.git
+! cp -R ~/repo/turtleyacht/gs-rest-service .
+" Create record to represent GET response to /greeting
+0i
+package com.example.restservice;
+
+public record Greeting(long id, String content) {}
+.
+w gs-rest-service/initial/src/main/java/com/example/restservice/Greeting.java
+1,$d
+0i
+package com.example.restservice;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController // @Controller + @ResponseBody: return a domain object instead of a view
+public class GreetingController {
+    private static final String template = "Hello, %s!";
+
+    private final AtomicLong counter = new AtomicLong();
+
+    // @PostMapping
+    @GetMapping("/greeting")
+    // @RequestMapping(method=GET)
+    public Greeting greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
+	return new Greeting(counter.incrementAndGet(), String.format(template, name));
+    }
+}
+.
+w gs-rest-service/initial/src/main/java/com/example/restservice/GreetingController.java
+" 1,$d Skip after `w' when editing
+e gs-rest-service/initial/src/main/java/com/example/restservice/RestServiceApplication.java
+/@SpringBootApplication
+i
+// Combines these annotations:
+// @Configuration: Tags the class as a source of bean definitions for the application context
+// @EnableAutoConfiguration: Tells Spring Boot to start adding beans based on classpath settings, other beans,
+//                           and various property settings. For example, if spring-webmvc is on the classpath,
+//                           this annotation flags the application as a web application and activates key behaviors,
+//                           such as setting up a DispatcherServlet
+// @ComponentScan: Tells Spring to look for other components, configurations, and services in the com/example package, letting
+//                 it find the controllers.
+.
+w
+1,$d
+i
+package com.example.restservice;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class GreetingControllerTests {
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    public void noParamGreetingShouldReturnDefaultMessage() throws Exception {
+        this.mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").value("Hello, World!"));
+    }
+
+    @Test
+    public void paramGreetingShouldReturnTailoredMessage() throws Exception {
+        this.mockMvc.perform(get("/greeting").param("name", "Spring Community"))
+            .andDo(print()).andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").value("Hello, Spring Community!"));
+    }
+}
+.
+w gs-rest-service/initial/src/test/java/com/example/restservice/GreetingControllerTests.java
+! cat gs-rest-service/initial/src/main/java/com/example/restservice/RestServiceApplication.java
+" Works, but runs in foreground so we cannot continue to next line
+"! cd gs-rest-service/initial; JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk-17.0.8.1+1/Contents/Home ./gradlew --no-daemon build && JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk-17.0.8.1+1/Contents/Home java -jar build/libs/rest-service-0.0.1-SNAPSHOT.jar
+! cd gs-rest-service/initial; JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk-17.0.8.1+1/Contents/Home ./gradlew --no-daemon test bootRun
+" Visit http://localhost:8080/greeting
+" Try http://localhost:8080/greeting?name=Chris
+" We can't do anything after C-c except q[uit]
+q
+" A text block is
+" 0i
+" ...
+" .
+" w <path>/<file>
+" 1,$d
+" ^^^^ Skip if next command is to edit (e) a file
