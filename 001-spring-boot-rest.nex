@@ -3,11 +3,11 @@
 " $ nvi 001-clone.nex
 " :set ai
 " :wq
-" $ nex < 001-clone.nex
+" $ nex < 001-spring-boot-rest.nex
 ! rm -rf gs-rest-service
 "! git clone https://github.com/spring-guides/gs-rest-service.git
 "! git clone https://github.com/turtleyacht/gs-rest-service.git
-! cp -R ~/repo/turtleyacht/gs-rest-service .
+! cp -R ~/repo/turtleyacht/gs-rest-service-2024-07 gs-rest-service
 " Create record to represent GET response to /greeting
 0i
 package com.example.restservice;
