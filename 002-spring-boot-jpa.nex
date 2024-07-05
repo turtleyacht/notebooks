@@ -1,0 +1,91 @@
+" tutorial: https://spring.io/guides/gs/accessing-data-rest
+" :set ai
+" $ nex < 002-spring-boot-jpa.nex
+! rm -rf gs-accessing-data-rest
+! rm -rf gs-accessing-data-rest-2024-07
+"! git clone https://github.com/spring-guides/gs-accessing-data-rest.git
+"! git clone git@github.com:turtleyacht/gs-accessing-data-rest-2024-07.git
+"! mv -v gs-accessing-data-rest-2024-07 gs-accessing-data-rest
+! cp -R ~/repo/turtleyacht/gs-accessing-data-rest-2024-07 gs-accessing-data-rest
+i
+package com.example.accessingdatarest;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
+public class Person {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+
+    private String firstName;
+    private String lastName;
+
+    public String getFirstName() {
+	return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+	this.firstName = firstName;
+    }
+
+    public String getLastName() {
+	return lastName;
+    }
+
+    public void setLastName(String lastName) {
+	this.lastName = lastName;
+    }
+}
+.
+w gs-accessing-data-rest/initial/src/main/java/com/example/accessingdatarest/Person.java
+1,$d
+i
+package com.example.accessingdatarest;
+
+import java.util.List;
+
+import org.springframework.data.repository.PagingAndSortingRepository; // Spring Data Commons
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+
+// Spring Boot tells Spring Data JPA to create a concrete implementation of interface to talk to in-memory db
+// Sprint Data REST builds on top of Spring MVC to create controllers, JSON converters, and other beans for RESTful front end.
+// These link up to Spring Data JPA back end.
+// @RepositoryRestResource tells Spring MVC to create RESTful endpoints for /people
+// Annotation not required; only needed to change export details (/people vs default /persons)
+@RepositoryRestResource(collectionResourceRel = "people", path = "people")
+public interface PersonRepository extends PagingAndSortingRepository<Person, Long>, CrudRepository<Person, Long> {
+    List<Person> findByLastName(@Param("name") String name);
+}
+.
+w gs-accessing-data-rest/initial/src/main/java/com/example/accessingdatarest/PersonRepository.java
+! docker stop jpa-spring-test || echo Container name is free to use.
+! docker run -d --name jpa-spring-test --rm -p 8080:8080 -v $(pwd)/gs-accessing-data-rest/initial:/app -w /app openjdk:17-jdk-slim /bin/sh -c './gradlew --no-daemon test bootRun'
+! ping -q -c 240 localhost; curl -s http://localhost:8080/people || echo App startup taking even longer. Consider increasing ping count.
+! curl -i -H 'Content-Type: application/json' -d '{ "firstName": "Frodo", "lastName": "Baggins" }' http://localhost:8080/people
+! curl -i -H 'Content-Type: application/json' -d '{ "firstName": "Samwise", "lastName": "Gamgee" }' http://localhost:8080/people
+! curl -i -H 'Content-Type: application/json' -d '{ "firstName": "Peregrin", "lastName": "Took" }' http://localhost:8080/people
+" Notice Location: header.
+" See also RepositoryRestConfiguration.setReturnBodyOnCreate(...) and setReturnBodyOnUpdate(...)
+" And RepositoryRestConfiguration.setReturnBodyForPutAndPost(...) for create and update operations
+" Evo Inflector pluralizes groups for us
+! curl -s http://localhost:8080/people
+! curl -s http://localhost:8080/people/2
+! curl -s http://localhost:8080/people/search
+! curl -svv http://localhost:8080/people/search/findByLastName?name=Baggins
+" PUT: replace (wholesale), PATCH: update (subset), DELETE: remove
+" PUT may set unsupplied fields to null
+" PUT will 404 if you use /people endpoint instead of the entity you meant to replace (/people/1)
+! curl -X PUT -H "Content-Type: application/json" -d '{ "firstName": "Bilbo", "lastName": "Baggins" }' http://localhost:8080/people/1
+! curl -X PATCH -H "Content-Type: application/json" -d '{ "firstName": "Bilbo Jr." }' http://localhost:8080/people/1
+! curl -X DELETE http://localhost:8080/people/2
+! curl -X DELETE http://localhost:8080/people/3
+! while true; do docker stop jpa-spring-test && break; done
+"! cd gs-accessing-data-rest/initial; JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk-17.0.8.1+1/Contents/Home ./gradlew --no-daemon test bootRun
+q
+
