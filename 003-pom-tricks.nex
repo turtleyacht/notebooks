@@ -1,0 +1,47 @@
+" 003-pom-tricks.nex
+" Apply transforms on pom.xml files
+" nex < 003-pom-tricks.nex
+read pom.xml
+" Remove <dependencies></dependencies> in both standalone and <dependencyManagement> blocks
+g/dependencies/,/\/dependencies/c\
+.
+" Restate <properties> since it gets removed--helps with formatting
+g/properties/,/\/properties/c\
+    <properties>\
+        <java.version>17</java.version>\
+    </properties>\
+.
+" Insert before ending </project> tag.
+" Does not need a backslash terminator like the above!
+?</project?i
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+.
+w!
+1,$d
+! cat pom.xml
+! git restore pom.xml
+! echo quitting...
+w /tmp/blah
+! rm /tmp/blah
+q
+! echo should have quit
+q
