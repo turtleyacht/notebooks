@@ -1,0 +1,10 @@
+" 004-error-code.nex
+" Early exit in nex
+! [ \! -f err.nex ] || rm -v err.nex
+"
+" Assume the above is a top-level initialization of error code handling.
+! ./important-step-1.sh || echo Error: a command failed && rm -v err.nex
+read err.nex
+! ./important-step-2.sh && echo Should not get here
+q
+

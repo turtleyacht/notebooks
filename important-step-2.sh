@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo Starting important step 2...
