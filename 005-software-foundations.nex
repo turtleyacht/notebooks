@@ -1,0 +1,49 @@
+" Software Foundations, vol 1
+" No blank lines.
+" so coq.nex
+" No, env vars don't work in this way
+!export BLAH=helloyay
+!echo BLAH=$BLAH
+![ -f blah.txt ] && rm blah.txt
+0i
+Inductive day : Type :=
+  | monday
+  | tuesday.
+
+Definition next_weekday (d:day) : day :=
+  match d with
+  | monday => tuesday
+  | tuesday => tuesday
+  end.
+
+Compute (next_weekday monday).
+
+Example test_next_weekday:
+  (next_weekday monday) = tuesday.
+
+Proof. simpl. reflexivity. Qed.
+.
+w days.v
+" RUN_SCRIPT: this runs `coqc' for us
+1,$d
+0i
+#!/bin/sh
+PATH=/Applications/Coq-Platform~8.18~2023.11.app/Contents/Resources/bin:$PATH
+coqc $1
+.
+w run-coq.sh
+!chmod u+x run-coq.sh
+" State "files" do not appear to work in this way
+1,$d
+0i
+hello
+.
+w MESSAGE
+!r MESSAGE
+! rm MESSAGE
+" COQ_RUN: choose the file to run on next line
+!./run-coq.sh days.v
+" CLEANUP:
+!rm run-coq.sh
+!rm *.v
+!rm *.vo *.vok *.vos *.glob
