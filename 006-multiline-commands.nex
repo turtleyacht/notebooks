@@ -1,0 +1,10 @@
+! echo does this work && \
+  echo where backslash works
+! echo $(pwd) && \
+    echo second line && \
+    echo third line
+! pwd && \
+    echo hello && \
+    echo and another line
+q
+
