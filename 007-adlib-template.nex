@@ -1,0 +1,16 @@
+" 007-adlib-template.nex
+" Source .nex files to as templates
+! [ -f TEMPLATE ] && rm TEMPLATE || echo
+i
+The [animal] jumped over the [thing].
+.
+w TEMPLATE
+"! cat TEMPLATE
+" Read template back in (note how we don't need `cat' above!)
+r TEMPLATE
+s/\[animal]/fox
+s/\[thing]/hill
+w story.txt
+! cat story.txt
+! rm story.txt
+! rm TEMPLATE
